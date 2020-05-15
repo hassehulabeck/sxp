@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 /* Skapa en applikation som:
     Sten-sax-påse.
     Sten > Sax
@@ -25,8 +27,14 @@ error_reporting(E_ALL);
 
 // Värden
 $message = "";
-$playerChoice = null;  // värdetyp? 0,1,2
-$cpuChoice = null;
+$player = [
+    'choice' => null,
+    'score' => 0
+];
+$cpu = [
+    'choice' => null,
+    'score' => 0
+];
 
 // 3 x 3 de olika utfallen i en array. 
 // $regler['rock']['paper'] Spelaren valt rock, cpu valt paper.
@@ -48,24 +56,50 @@ $regler = [
     ]
 ];
 
+if (isset($_POST['reset'])) {
+    session_destroy();
+}
+
+// Skriv över värden från sessionsvariabeln.
+$player = $_SESSION['player'];
+$cpu = $_SESSION['cpu'];
+
+
 
 // Pseudokod
 // Kolla om användaren har tryckt på något
 if (isset($_POST['rock'])) {
-    $playerChoice = 'rock';
+    $player['choice'] = 'rock';
 }
 if (isset($_POST['scissors'])) {
-    $playerChoice = 'scissors';
+    $player['choice'] = 'scissors';
 }
 if (isset($_POST['paper'])) {
-    $playerChoice = 'paper';
+    $player['choice'] = 'paper';
 }
+
+
+
+
 // Låt datorn slumpa
-$cpuChoice = ['rock', 'paper', 'scissors'][mt_rand(0, 2)];
+$cpu['choice'] = ['rock', 'paper', 'scissors'][mt_rand(0, 2)];
 
 // Kontrollera "vapen" - villkor
-echo "<p>" . $playerChoice . " - " . $cpuChoice;
-echo "<p>" . $regler[$playerChoice][$cpuChoice];
+echo "<p>" . $player['choice'] . " - " . $cpu['choice'];
+echo "<p>" . $regler[$player['choice']][$cpu['choice']];
+
+// Bokför poäng.
+if ($regler[$player['choice']][$cpu['choice']] == 'VINNER') {
+    $player['score']++;
+}
+if ($regler[$player['choice']][$cpu['choice']] == 'FÖRLORAR') {
+    $cpu['score']++;
+}
+echo "<p>" . $player['score'] . " - " . $cpu['score'];
+
+// Spara poängen.
+$_SESSION['player'] = $player;
+$_SESSION['cpu'] = $cpu;
 
 ?>
 
@@ -83,6 +117,8 @@ echo "<p>" . $regler[$playerChoice][$cpuChoice];
         <input type="submit" value="Sten" name="rock">
         <input type="submit" value="Sax" name="scissors">
         <input type="submit" value="Påse" name="paper">
+        <p></p>
+        <input type="submit" value="Ny match" name="reset">
     </form>
 </body>
 
